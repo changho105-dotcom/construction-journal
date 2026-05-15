@@ -430,6 +430,8 @@ async function checkAuth(){
     const r=await fetch('/api/auth/me',{headers:{Authorization:`Bearer ${token}`}});
     if(!r.ok){clearAuth();showLogin();return;}
     currentUser=await r.json();
+    // 관리자 계정으로 접속 시 로그인 화면 표시
+    if(currentUser.role==='admin'){clearAuth();showLogin();return;}
     showApp();
   }catch{showLogin();}
 }
