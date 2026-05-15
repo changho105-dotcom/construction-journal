@@ -716,7 +716,19 @@ document.getElementById('fi').addEventListener('change',async e=>{
   e.target.value='';render();scheduleBuild();
 });
 
-window.setMain=function(id){mainId=id;render();showToast('대표 사진으로 설정');scheduleBuild();};
+/* 렌더 전 모든 textarea 내용 photos 배열에 저장 */
+function saveAllDescs(){
+  // 대표 사진 설명
+  const mainTa=document.getElementById('mainDta');
+  if(mainTa&&mainId){const mp=photos.find(p=>p.id===mainId);if(mp)mp.description=mainTa.value;}
+  // 나머지 사진 설명
+  photos.forEach(p=>{
+    const ta=document.querySelector(`textarea[data-id="${p.id}"]`);
+    if(ta)p.description=ta.value;
+  });
+}
+
+window.setMain=function(id){saveAllDescs();mainId=id;render();showToast('대표 사진으로 설정');scheduleBuild();};
 window.saveDesc=function(id,isMain){
   const ta=document.querySelector(isMain?'#mainDta':`textarea[data-id="${id}"]`);
   if(!ta)return;
@@ -726,6 +738,7 @@ window.saveDesc=function(id,isMain){
   scheduleBuild();
 };
 window.delPhoto=function(id){
+  saveAllDescs();
   if(!confirm('이 사진을 삭제하시겠습니까?'))return;
   if(mainId===id)mainId=null;
   photos=photos.filter(p=>p.id!==id);delete pdata[id];
