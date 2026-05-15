@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="공사일지">
+<meta name="theme-color" content="#BA7517">
+<title>공사 현장 사진 일지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#f2efea;font-family:'Apple SD Gothic Neo','Malgun Gothic','NanumGothic',sans-serif;color:#1a1a1a;font-size:16px;-webkit-font-smoothing:antialiased}
+
+/* Header */
+.hdr{background:#fff;border-bottom:.5px solid rgba(0,0,0,.10);padding:0 16px;padding-top:env(safe-area-inset-top,12px);position:sticky;top:0;z-index:20}
+.hdr-row{display:flex;align-items:center;gap:10px;padding:12px 0}
+.hdr-icon{font-size:22px;color:#BA7517;flex-shrink:0}
+.proj-in{flex:1;font-size:16px;font-weight:500;color:#1a1a1a;background:none;border:none;outline:none;font-family:inherit;min-width:0}
+.proj-in::placeholder{color:#ccc}
+.btn-send{display:flex;align-items:center;gap:5px;padding:9px 14px;background:#BA7517;color:#FAEEDA;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:inherit}
+.btn-send:active:not(:disabled){opacity:.75}
+.btn-send:disabled{opacity:.45;cursor:not-allowed}
+
+/* PDF 준비 배너 */
+.banner{display:none;align-items:center;gap:10px;padding:9px 16px}
+.banner.building{display:flex;background:#fff8ee;border-bottom:.5px solid #f0d080}
+.banner.ready{display:flex;background:#f0faf0;border-bottom:.5px solid #90d090}
+.bspin{width:16px;height:16px;border:2px solid #e8c070;border-top-color:#BA7517;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Upload */
+.up-bar{padding:10px 16px;background:#fff;border-bottom:.5px solid rgba(0,0,0,.08)}
+.btn-up{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:14px;background:#fef7ec;border:1.5px dashed #e8a830;border-radius:12px;font-size:15px;color:#854F0B;cursor:pointer;font-family:inherit;font-weight:600}
+.btn-up:active:not(:disabled){opacity:.7}
+.btn-up:disabled{opacity:.5;cursor:not-allowed}
+.spin{width:18px;height:18px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;opacity:.55;flex-shrink:0}
+
+/* Sections */
+.sec-lbl{padding:14px 16px 6px;font-size:11px;font-weight:700;color:#aaa;letter-spacing:.07em;display:flex;align-items:center;gap:7px}
+.sec-dot{width:6px;height:6px;border-radius:50%;background:#BA7517;flex-shrink:0}
+
+/* Main card */
+.main-card{margin:0 16px 4px;background:#fff;border:1.5px solid #BA7517;border-radius:14px;overflow:hidden}
+.main-img-wrap{position:relative}
+.main-img{width:100%;display:block;max-height:240px;object-fit:cover}
+.star-badge{position:absolute;top:10px;left:10px;background:#BA7517;color:#FAEEDA;font-size:11px;font-weight:700;padding:4px 11px;border-radius:6px;display:flex;align-items:center;gap:4px}
+.main-time{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.58);color:#fff;font-size:11px;padding:4px 10px;border-radius:6px}
+.main-body{padding:12px 14px}
+.no-main{padding:30px 20px;text-align:center}
+.no-main i{font-size:36px;color:#ddd;display:block;margin-bottom:10px}
+.no-main p{font-size:14px;color:#bbb}
+.no-main small{font-size:12px;color:#ccc;display:block;margin-top:5px}
+
+/* Date group */
+.date-hdr{padding:9px 16px;font-size:12px;font-weight:600;color:#888;display:flex;align-items:center;gap:8px;background:#ece9e4;border-top:.5px solid rgba(0,0,0,.07);border-bottom:.5px solid rgba(0,0,0,.07);margin-top:8px}
+.d-dot{width:7px;height:7px;border-radius:50%;background:#BA7517;flex-shrink:0}
+.d-cnt{margin-left:auto;font-size:11px;color:#aaa}
+
+/* Photo card */
+.pcard{margin:8px 16px;background:#fff;border:.5px solid rgba(0,0,0,.12);border-radius:14px;overflow:hidden}
+.iw{position:relative;background:#ececec}
+.pi{width:100%;display:block;max-height:240px;object-fit:cover}
+.tbadge{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.58);color:#fff;font-size:11px;padding:4px 10px;border-radius:6px}
+.nbadge{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.92);border:.5px solid rgba(0,0,0,.15);color:#555;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px}
+.cbody{padding:11px 14px}
+.dta{width:100%;min-height:62px;font-size:14px;line-height:1.65;color:#1a1a1a;background:#f8f8f6;border:.5px solid rgba(0,0,0,.13);border-radius:9px;padding:9px 12px;resize:none;font-family:inherit;outline:none;-webkit-appearance:none}
+.dta::placeholder{color:#ccc}
+.cfooter{display:flex;align-items:center;gap:7px;margin-top:9px}
+.btn-star{font-size:13px;padding:9px 11px;background:none;border:.5px solid rgba(0,0,0,.15);border-radius:9px;color:#666;cursor:pointer;display:flex;align-items:center;gap:5px;flex:1;font-family:inherit;font-weight:500}
+.btn-star:active{opacity:.7}
+.btn-del{font-size:20px;padding:8px 10px;background:none;border:.5px solid rgba(0,0,0,.15);border-radius:9px;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-del:active{opacity:.7}
+.btn-save{font-size:13px;padding:9px 18px;background:#BA7517;color:#FAEEDA;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto}
+.btn-save:active{opacity:.78}
+.ok-flash{font-size:12px;color:#3B6D11;display:none;align-items:center;gap:3px;white-space:nowrap}
+.empty{text-align:center;padding:56px 24px}
+.empty i{font-size:48px;display:block;margin-bottom:14px;color:#ddd}
+.empty p{font-size:15px;color:#aaa}
+.empty small{font-size:13px;color:#ccc;display:block;margin-top:6px}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+76px);left:50%;transform:translateX(-50%);background:rgba(20,20,20,.84);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:22px;white-space:pre-line;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none;z-index:700;backdrop-filter:blur(6px)}
+.toast.show{opacity:1}
+
+/* ══ 공유 바텀 시트 ══ */
+.sheet-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400}
+.sheet-backdrop.show{display:block}
+.share-sheet{position:fixed;bottom:0;left:0;right:0;z-index:410;background:#fff;border-radius:22px 22px 0 0;padding-bottom:max(env(safe-area-inset-bottom,0px),12px);transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0)}
+.share-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 0}
+.sheet-title{font-size:15px;font-weight:700;color:#1a1a1a;text-align:center;padding:14px 20px 2px}
+.sheet-sub{font-size:12px;color:#999;text-align:center;padding:0 24px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-divider{height:.5px;background:#f0f0f0;margin:0 0 6px}
+.share-opts{padding:6px 14px 4px;display:flex;flex-direction:column;gap:7px}
+
+/* 각 옵션 버튼 */
+.sopt{display:flex;align-items:center;gap:14px;padding:13px 14px;border:none;border-radius:14px;cursor:pointer;font-family:inherit;width:100%;text-align:left}
+.sopt:active{filter:brightness(.94)}
+.sopt-kakao{background:#FFFBE6}
+.sopt-email{background:#EEF3FF}
+.sopt-save{background:#F0FAF0}
+.sopt-other{background:#F6F1FF}
+.sopt-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic-k{background:#FEE500}
+.ic-e{background:#C5D8FF}
+.ic-s{background:#B8E6B8}
+.ic-o{background:#D5C4FF}
+.sopt-text{flex:1}
+.sopt-label{font-size:15px;font-weight:700;color:#1a1a1a;display:block}
+.sopt-desc{font-size:12px;color:#888;margin-top:2px;display:block}
+.sopt-arr{font-size:20px;color:#ccc;flex-shrink:0}
+
+.btn-cancel{display:block;width:calc(100%-28px);margin:4px 14px 0;padding:14px;background:#f3f3f3;border:none;border-radius:13px;font-size:15px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;width:calc(100% - 28px)}
+.btn-cancel:active{background:#e8e8e8}
+
+/* ══ 완료 ══ */
+.done-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:800;align-items:center;justify-content:center;padding:20px}
+.done-overlay.show{display:flex}
+.done-box{background:#fff;border-radius:22px;padding:36px 28px;text-align:center;width:100%;max-width:320px}
+.done-box i{font-size:56px;color:#BA7517;display:block;margin-bottom:16px}
+.done-box h3{font-size:20px;font-weight:700;margin-bottom:10px}
+.done-box p{font-size:14px;color:#888;line-height:1.7;margin-bottom:28px}
+.btn-new{width:100%;padding:15px;background:#BA7517;color:#FAEEDA;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-new:active{opacity:.78}
+
+.footer-pad{height:calc(env(safe-area-inset-bottom,0px)+40px)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <i class="ti ti-building-factory-2 hdr-icon"></i>
+    <input id="pjIn" class="proj-in" placeholder="공사명을 입력하세요">
+    <button id="sendBtn" class="btn-send" onclick="onSendClick()">
+      <i class="ti ti-share"></i>보내기
+    </button>
+  </div>
+</div>
+
+<!-- PDF 상태 배너 -->
+<div class="banner" id="banner">
+  <div class="bspin" id="bannerSpin"></div>
+  <i class="ti ti-circle-check" id="bannerIcon" style="color:#2E7D32;font-size:18px;display:none"></i>
+  <span id="bannerMsg" style="font-size:13px"></span>
+</div>
+
+<div class="up-bar">
+  <input type="file" id="fi" accept="image/*" multiple style="display:none">
+  <button id="upBtn" class="btn-up" onclick="document.getElementById('fi').click()">
+    <i class="ti ti-camera-plus" style="font-size:22px"></i>현장 사진 추가
+  </button>
+</div>
+
+<div class="sec-lbl"><span class="sec-dot"></span>대표 사진 (표지)</div>
+<div id="mainSec"></div>
+<div id="otherHdr" class="sec-lbl" style="display:none"><span class="sec-dot"></span>현장 사진</div>
+<div id="tl"></div>
+<div class="footer-pad"></div>
+<div class="toast" id="toast"></div>
+
+<!-- 공유 시트 -->
+<div class="sheet-backdrop" id="backdrop" onclick="closeSheet()"></div>
+<div class="share-sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">어디로 보낼까요?</div>
+  <div class="sheet-sub" id="sheetSub"></div>
+  <div class="sheet-divider"></div>
+  <div class="share-opts">
+
+    <!-- 카카오톡 : onclick은 동기 진입점, 내부에서 즉시 navigator.share -->
+    <button class="sopt sopt-kakao" id="btnKakao" onclick="shareNow('kakao')">
+      <div class="sopt-icon ic-k">
+        <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+          <path d="M10 30l2.5-8.5C8 19 6 15.5 6 12 6 5.4 12.3 0 20 0s14 5.4 14 12-6.3 12-14 12c-1.5 0-2.9-.2-4.2-.5L10 30z" fill="#FEE500"/>
+          <rect x="13.5" y="15" width="3.2" height="6" rx="1.6" fill="#3C1E1E"/>
+          <rect x="18.4" y="12.5" width="3.2" height="8.5" rx="1.6" fill="#3C1E1E"/>
+          <rect x="23.3" y="15" width="3.2" height="6" rx="1.6" fill="#3C1E1E"/>
+        </svg>
+      </div>
+      <div class="sopt-text">
+        <span class="sopt-label">카카오톡</span>
+        <span class="sopt-desc">카카오톡이 열리고 받을 사람을 선택합니다</span>
+      </div>
+      <i class="ti ti-chevron-right sopt-arr"></i>
+    </button>
+
+    <button class="sopt sopt-email" onclick="shareNow('email')">
+      <div class="sopt-icon ic-e">
+        <i class="ti ti-mail" style="color:#1967D2;font-size:24px"></i>
+      </div>
+      <div class="sopt-text">
+        <span class="sopt-label">이메일</span>
+        <span class="sopt-desc">메일 앱이 열립니다</span>
+      </div>
+      <i class="ti ti-chevron-right sopt-arr"></i>
+    </button>
+
+    <button class="sopt sopt-save" onclick="shareNow('save')">
+      <div class="sopt-icon ic-s">
+        <i class="ti ti-device-floppy" style="color:#2E7D32;font-size:24px"></i>
+      </div>
+      <div class="sopt-text">
+        <span class="sopt-label">내 기기에 저장</span>
+        <span class="sopt-desc">다운로드 폴더에 PDF 저장</span>
+      </div>
+      <i class="ti ti-chevron-right sopt-arr"></i>
+    </button>
+
+    <button class="sopt sopt-other" onclick="shareNow('other')">
+      <div class="sopt-icon ic-o">
+        <i class="ti ti-share" style="color:#7B1FA2;font-size:24px"></i>
+      </div>
+      <div class="sopt-text">
+        <span class="sopt-label">기타 앱 (문자·클라우드 등)</span>
+        <span class="sopt-desc">OS 공유 시트가 열립니다</span>
+      </div>
+      <i class="ti ti-chevron-right sopt-arr"></i>
+    </button>
+
+  </div>
+  <button class="btn-cancel" onclick="closeSheet()">취소</button>
+</div>
+
+<!-- 완료 -->
+<div class="done-overlay" id="doneOverlay">
+  <div class="done-box">
+    <i class="ti ti-circle-check"></i>
+    <h3>전송 완료</h3>
+    <p>PDF 보고서를 보냈습니다.<br>새 사진 보고서를 작성하려면<br>아래 버튼을 눌러주세요.</p>
+    <button class="btn-new" onclick="startNew()">새 사진전 시작하기</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* ══ 상태 ══ */
+let photos=[], pdata={}, mainId=null, projName='공사 현장 사진 보고서';
+let pdfBlob=null, pdfFname='', pdfBuilding=false, buildTimer=null;
+const FF="'Apple SD Gothic Neo','Malgun Gothic','NanumGothic',sans-serif";
+
+const fmtDate  = ts=>new Date(ts).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+const fmtTime  = ts=>new Date(ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+const fmtShort = ts=>new Date(ts).toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'});
+const fmtDK    = ts=>{const d=new Date(ts);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+const genId    = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc      = s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+function showToast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',dur);
+}
+
+/* ══ 배너 ══ */
+function setBanner(state,msg){
+  const el=document.getElementById('banner');
+  const spin=document.getElementById('bannerSpin');
+  const icon=document.getElementById('bannerIcon');
+  const msgEl=document.getElementById('bannerMsg');
+  el.className='banner';
+  if(state==='building'){
+    el.classList.add('building');
+    spin.style.display='block';icon.style.display='none';
+    msgEl.style.color='#7a5010';
+    msgEl.textContent=msg||'PDF 보고서 준비 중...';
+  } else if(state==='ready'){
+    el.classList.add('ready');
+    spin.style.display='none';icon.style.display='block';
+    msgEl.style.color='#2a6a2a';
+    msgEl.textContent='보고서 준비 완료 ✓  —  보내기를 누르세요';
+  }
+}
+
+/* ══ 백그라운드 PDF 빌드 ══ */
+function scheduleBuild(){
+  pdfBlob=null; clearTimeout(buildTimer); setBanner('idle');
+  if(!photos.length)return;
+  buildTimer=setTimeout(async()=>{
+    if(pdfBuilding||!photos.length)return;
+    pdfBuilding=true; setBanner('building');
+    try{
+      pdfBlob=await buildPDFBlob(m=>setBanner('building',m));
+      pdfFname=makeFname();
+      setBanner('ready');
+    }catch(e){console.warn(e);setBanner('idle');}
+    pdfBuilding=false;
+  },900);
+}
+function makeFname(){return`${projName}_사진보고서.pdf`;}
+
+/* ══ 보내기 버튼 ══ */
+async function onSendClick(){
+  if(!photos.length){showToast('사진을 먼저 추가해주세요');return;}
+  if(pdfBuilding){showToast('PDF 준비 중입니다.\n잠시 후 다시 눌러주세요',2500);return;}
+  if(!pdfBlob){
+    // 아직 빌드 안 됐으면 지금 빌드 (동기적으로 배너만 띄우고 기다림)
+    setBanner('building');
+    try{
+      pdfBlob=await buildPDFBlob(m=>setBanner('building',m));
+      pdfFname=makeFname();
+      setBanner('ready');
+    }catch(e){setBanner('idle');showToast('PDF 생성 오류. 다시 시도해주세요.',3500);return;}
+  }
+  document.getElementById('sheetSub').textContent='📄 '+pdfFname;
+  openSheet();
+}
+
+/* ══ 시트 ══ */
+function openSheet(){
+  document.getElementById('backdrop').className='sheet-backdrop show';
+  requestAnimationFrame(()=>document.getElementById('sheet').className='share-sheet open');
+}
+function closeSheet(){
+  document.getElementById('sheet').className='share-sheet';
+  setTimeout(()=>document.getElementById('backdrop').className='sheet-backdrop',300);
+}
+
+/* ══════════════════════════════════════════════════
+   shareNow: 버튼 onclick에서 직접 호출 (동기 진입)
+   navigator.share()는 반드시 사용자 제스처 직후에 호출해야
+   iOS/Android에서 카카오톡 등 앱 목록이 나타남.
+   여기서는 pdfBlob이 이미 준비돼 있으므로
+   await 없이 즉시 navigator.share() 호출 가능.
+══════════════════════════════════════════════════ */
+function shareNow(method){
+  // 시트를 즉시 숨김 (애니메이션 대기 없음 — 제스처 체인 유지)
+  document.getElementById('sheet').className='share-sheet';
+  document.getElementById('backdrop').className='sheet-backdrop';
+
+  if(method==='save'){
+    dlPDF(); showToast('PDF가 저장되었습니다',3000); markDone(); return;
+  }
+
+  const file=new File([pdfBlob],pdfFname,{type:'application/pdf'});
+  const canShare=navigator.canShare&&navigator.canShare({files:[file]});
+
+  if(canShare){
+    // ★ 카카오톡/이메일/기타 모두 여기서 OS 공유 시트를 엶
+    // 사용자가 공유 시트에서 카카오톡을 선택하면
+    // 카카오톡 앱이 열리고 받을 사람 선택 화면이 나타남
+    navigator.share({
+      files:[file],
+      title:projName,
+      text:'공사 현장 사진 보고서'
+    }).then(()=>{
+      markDone();
+    }).catch(e=>{
+      if(e.name!=='AbortError') showToast('공유를 취소했습니다.');
+    });
+  } else {
+    // navigator.share 미지원 브라우저 → 다운로드 fallback
+    dlPDF();
+    if(method==='kakao'){
+      showToast('PDF가 저장되었습니다.\n카카오톡 → 대화방 → ＋ → 파일로 전송하세요',4500);
+    } else {
+      showToast('PDF가 저장되었습니다',3000);
+    }
+    markDone();
+  }
+}
+
+function dlPDF(){
+  const url=URL.createObjectURL(pdfBlob);
+  const a=document.createElement('a');a.href=url;a.download=pdfFname;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+function markDone(){
+  document.getElementById('doneOverlay').className='done-overlay show';
+}
+window.startNew=function(){
+  photos=[];pdata={};mainId=null;projName='공사 현장 사진 보고서';
+  pdfBlob=null;pdfFname='';pdfBuilding=false;clearTimeout(buildTimer);
+  document.getElementById('pjIn').value='';
+  document.getElementById('doneOverlay').className='done-overlay';
+  setBanner('idle');render();
+};
+
+/* ══ EXIF / 압축 ══ */
+async function extractTS(file){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      try{const t=new TextDecoder('ascii',{fatal:false}).decode(new Uint8Array(e.target.result));
+        const m=t.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+        if(m){const v=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]).getTime();if(v>0){res(v);return;}}}catch(e){}
+      res(file.lastModified||Date.now());};
+    r.readAsArrayBuffer(file.slice(0,131072));});}
+async function compress(file){
+  return new Promise(res=>{
+    const u=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(u);
+      let w=img.naturalWidth,h=img.naturalHeight;
+      if(w>1200){h=Math.round(h*1200/w);w=1200;}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',.80));};
+    img.onerror=()=>{URL.revokeObjectURL(u);res(null);};img.src=u;});}
+
+/* ══ 업로드 ══ */
+document.getElementById('pjIn').addEventListener('input',e=>{projName=e.target.value||'공사 현장 사진 보고서';scheduleBuild();});
+document.getElementById('fi').addEventListener('change',async e=>{
+  const files=Array.from(e.target.files);if(!files.length)return;
+  const btn=document.getElementById('upBtn');btn.disabled=true;let added=0;
+  for(let i=0;i<files.length;i++){
+    btn.innerHTML=`<div class="spin"></div>처리 중... (${i+1}/${files.length})`;
+    const f=files[i],id=genId(),ts=await extractTS(f),src=await compress(f);
+    if(!src)continue;
+    photos.push({id,timestamp:ts,filename:f.name,description:''});
+    pdata[id]=src;added++;if(!mainId)mainId=id;
+  }
+  if(added>0){photos.sort((a,b)=>a.timestamp-b.timestamp);showToast(`${added}장 추가 완료`);}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-camera-plus" style="font-size:22px"></i>현장 사진 추가';
+  e.target.value='';render();scheduleBuild();});
+
+window.setMain=function(id){mainId=id;render();showToast('대표 사진으로 설정');scheduleBuild();};
+window.saveDesc=function(id,isMain){
+  const ta=document.querySelector(isMain?'#mainDta':`textarea[data-id="${id}"]`);
+  if(!ta)return;const p=photos.find(x=>x.id===id);if(p)p.description=ta.value;
+  const ok=document.querySelector(isMain?'#mainOk':`.ok-flash[data-id="${id}"]`);
+  if(ok){ok.style.display='flex';setTimeout(()=>ok.style.display='none',1400);}scheduleBuild();};
+window.delPhoto=function(id){
+  if(!confirm('이 사진을 삭제하시겠습니까?'))return;
+  if(mainId===id)mainId=null;photos=photos.filter(p=>p.id!==id);delete pdata[id];
+  render();showToast('삭제되었습니다');scheduleBuild();};
+
+/* ══ 렌더 ══ */
+function render(){
+  const ms=document.getElementById('mainSec'),tl=document.getElementById('tl'),oh=document.getElementById('otherHdr');
+  const mp=photos.find(p=>p.id===mainId);
+  const others=photos.filter(p=>p.id!==mainId).sort((a,b)=>a.timestamp-b.timestamp);
+  if(mp){
+    ms.innerHTML=`<div class="main-card">
+      <div class="main-img-wrap">
+        <img class="main-img" src="${pdata[mp.id]}" alt="대표 사진">
+        <span class="star-badge"><i class="ti ti-star-filled" style="font-size:11px"></i>대표 사진</span>
+        <span class="main-time">${fmtTime(mp.timestamp)}</span>
+      </div>
+      <div class="main-body">
+        <textarea id="mainDta" class="dta" placeholder="표지 사진 설명을 입력하세요...">${mp.description||''}</textarea>
+        <div class="cfooter">
+          <button class="btn-del" onclick="delPhoto('${mp.id}')"><i class="ti ti-trash"></i></button>
+          <span class="ok-flash" id="mainOk"><i class="ti ti-check"></i>입력됨</span>
+          <button class="btn-save" onclick="saveDesc('${mp.id}',true)">확인</button>
+        </div>
+      </div></div>`;
+  }else{
+    ms.innerHTML=`<div class="main-card"><div class="no-main"><i class="ti ti-star"></i><p>대표 사진 미설정</p><small>아래 ☆ 버튼으로 설정하세요</small></div></div>`;
+  }
+  if(!others.length){
+    oh.style.display='none';
+    tl.innerHTML=photos.length===0?`<div class="empty"><i class="ti ti-photo-off"></i><p>아직 사진이 없습니다</p><small>위 버튼으로 현장 사진을 추가하세요</small></div>`:'';
+    return;
+  }
+  oh.style.display='flex';
+  const groups={};others.forEach(p=>{const dk=fmtDK(p.timestamp);if(!groups[dk])groups[dk]=[];groups[dk].push(p);});
+  let html='',seq=1;
+  for(const dk of Object.keys(groups).sort()){
+    const g=groups[dk];
+    html+=`<div><div class="date-hdr"><span class="d-dot"></span>${fmtDate(g[0].timestamp)}<span class="d-cnt">${g.length}장</span></div>`;
+    for(const p of g){
+      html+=`<div class="pcard"><div class="iw">
+        <img class="pi" src="${pdata[p.id]}" alt="사진 ${seq}" loading="lazy">
+        <span class="tbadge">${fmtTime(p.timestamp)}</span>
+        <span class="nbadge">#${seq}</span>
+      </div>
+      <div class="cbody">
+        <textarea class="dta" data-id="${p.id}" placeholder="이 사진에 대한 설명을 입력하세요...">${p.description||''}</textarea>
+        <div class="cfooter">
+          <button class="btn-star" onclick="setMain('${p.id}')"><i class="ti ti-star"></i>대표 사진</button>
+          <button class="btn-del" onclick="delPhoto('${p.id}')"><i class="ti ti-trash"></i></button>
+          <span class="ok-flash" data-id="${p.id}"><i class="ti ti-check"></i></span>
+          <button class="btn-save" onclick="saveDesc('${p.id}',false)">확인</button>
+        </div>
+      </div></div>`;seq++;
+    }
+    html+='</div>';
+  }
+  tl.innerHTML=html;
+}
+
+/* ══ PDF 생성 ══ */
+function coverHTML(proj,src,st){
+  const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+  return`<div style="width:794px;height:1123px;background:#fff;font-family:${FF};display:flex;flex-direction:column;overflow:hidden">
+  <div style="background:#BA7517;padding:32px 48px;flex-shrink:0">
+    <div style="color:#FAEEDA;font-size:26px;font-weight:700">${esc(proj)}</div>
+    <div style="color:rgba(250,238,218,.72);font-size:15px;margin-top:7px">공사 현장 사진 보고서</div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:36px 48px;background:#f8f8f8">
+    <img src="${src}" style="max-width:680px;max-height:510px;object-fit:contain;border:1px solid #e0e0e0">
+  </div>
+  <div style="padding:28px 48px;border-top:1px solid #eee">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;color:#333">
+      <tr style="border-bottom:1px solid #f0f0f0"><td style="padding:10px 0;color:#888;width:120px">작성일</td><td>${today}</td></tr>
+      <tr style="border-bottom:1px solid #f0f0f0"><td style="padding:10px 0;color:#888">촬영 기간</td><td>${esc(st.period)}</td></tr>
+      <tr><td style="padding:10px 0;color:#888">총 사진 수</td><td>표지 1장 + 현장 ${st.inner}장 (전체 ${st.total}장)</td></tr>
+    </table>
+  </div>
+  <div style="padding:14px 48px;background:#f5f5f5;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between">
+    <span style="font-size:12px;color:#aaa">공사 현장 사진 일지</span>
+    <span style="font-size:12px;color:#aaa">1 / ${st.pages}</span>
+  </div></div>`;}
+
+function pBlock(p,src,seq){
+  if(!p)return`<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:16px 48px"><div style="width:100%;height:100%;border:1.5px dashed #e0e0e0;border-radius:6px;display:flex;align-items:center;justify-content:center"><span style="font-size:13px;color:#ccc">해당 없음</span></div></div>`;
+  const dt=new Date(p.timestamp).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  return`<div style="flex:1;display:flex;flex-direction:column;padding:10px 48px;min-height:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0">
+      <span style="background:#BA7517;color:#FAEEDA;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">#${seq}</span>
+      <span style="font-size:12px;color:#888">${dt}</span>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#f8f8f8;border:1px solid #e8e8e8;overflow:hidden;max-height:295px">
+      <img src="${src}" style="max-width:100%;max-height:295px;object-fit:contain;display:block">
+    </div>
+    <div style="margin-top:8px;padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:4px;min-height:52px;font-size:13px;color:${p.description?'#333':'#bbb'};line-height:1.65">${p.description?esc(p.description):'(설명 없음)'}</div>
+  </div>`;}
+
+function pgHTML(proj,p1,s1,p2,s2,pn,tp,i1,i2){
+  return`<div style="width:794px;height:1123px;background:#fff;font-family:${FF};display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:14px 48px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <span style="font-size:14px;font-weight:700;color:#222">${esc(proj)}</span>
+    <span style="font-size:12px;color:#bbb">현장 사진 보고서</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+    ${pBlock(p1,s1,i1)}
+    <div style="height:1px;background:#eee;margin:0 48px;flex-shrink:0"></div>
+    ${pBlock(p2,s2,i2)}
+  </div>
+  <div style="padding:14px 48px;background:#f5f5f5;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between;flex-shrink:0">
+    <span style="font-size:12px;color:#aaa">공사 현장 사진 일지</span>
+    <span style="font-size:12px;color:#aaa">${pn} / ${tp}</span>
+  </div></div>`;}
+
+async function waitImgs(el){
+  const imgs=el.querySelectorAll('img');if(!imgs.length)return;
+  await Promise.all(Array.from(imgs).map(img=>{
+    if(img.complete&&img.naturalWidth>0)return Promise.resolve();
+    return new Promise(r=>{img.onload=img.onerror=r;});}));
+  await new Promise(r=>setTimeout(r,80));}
+
+async function buildPDFBlob(onStep){
+  const mp=photos.find(p=>p.id===mainId)||photos[0];
+  const others=photos.filter(p=>p.id!==mp.id).sort((a,b)=>a.timestamp-b.timestamp);
+  const total=1+Math.ceil(others.length/2);
+  const ts=photos.map(p=>p.timestamp).sort((a,b)=>a-b);
+  const st={period:ts.length>1?`${fmtShort(ts[0])} ~ ${fmtShort(ts[ts.length-1])}`:fmtShort(ts[0]),
+    total:photos.length,inner:others.length,pages:total};
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({format:'a4',unit:'mm'});
+  const box=document.createElement('div');box.style.cssText='position:absolute;left:-9999px;top:0;width:794px';
+  document.body.appendChild(box);
+  const cap=async(html,step)=>{
+    if(onStep)onStep(step);box.innerHTML=html;await waitImgs(box);
+    const cv=await html2canvas(box.firstElementChild,{scale:2,useCORS:false,allowTaint:true,backgroundColor:'#ffffff',logging:false,width:794,height:1123});
+    return cv.toDataURL('image/jpeg',.92);};
+  doc.addImage(await cap(coverHTML(projName,pdata[mp.id],st),'표지 생성 중...'),'JPEG',0,0,210,297);
+  for(let i=0;i<others.length;i+=2){
+    doc.addPage();
+    const p1=others[i],p2=others[i+1]||null,pn=2+Math.floor(i/2);
+    doc.addImage(await cap(pgHTML(projName,p1,pdata[p1.id],p2,p2?pdata[p2.id]:null,pn,total,i+1,p2?i+2:null),`${pn}/${total} 페이지 생성 중...`),'JPEG',0,0,210,297);
+  }
+  document.body.removeChild(box);
+  return doc.output('blob');
+}
+
+render();
+</script>
+</body>
+</html>
