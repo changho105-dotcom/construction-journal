@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1a1a2e">
+<title>관리자 — 공사 현장 사진 일지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#f0f0f0;font-family:'Malgun Gothic','Apple SD Gothic Neo','NanumGothic',sans-serif;color:#1a1a1a;font-size:14px;min-height:100vh}
+
+/* ══ 로그인 ══ */
+#loginView{display:none;min-height:100vh;background:#f0f0f0;align-items:center;justify-content:center;padding:24px}
+#loginView.show{display:flex}
+.lcard{background:#fff;border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 2px 20px rgba(0,0,0,.10)}
+.llogo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.llogo i{font-size:30px;color:#BA7517}
+.llogo-text h1{font-size:17px;font-weight:700}
+.llogo-text p{font-size:12px;color:#999;margin-top:2px}
+.lf{margin-bottom:14px}
+.lf label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:5px;letter-spacing:.04em}
+.lf input{width:100%;padding:11px 14px;border:.5px solid rgba(0,0,0,.18);border-radius:9px;font-size:14px;font-family:inherit;outline:none}
+.lf input:focus{border-color:#BA7517}
+.lbtn{width:100%;padding:13px;background:#BA7517;color:#FAEEDA;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+.lbtn:active{opacity:.82}
+.lerr{font-size:12px;color:#c0392b;text-align:center;margin-top:10px;min-height:16px}
+
+/* ══ 레이아웃 ══ */
+#adminView{display:none}
+#adminView.show{display:flex;min-height:100vh}
+
+/* 사이드바 */
+.sidebar{width:220px;background:#1a1a2e;flex-shrink:0;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0}
+.sb-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sb-logo i{font-size:22px;color:#BA7517}
+.sb-logo span{font-size:14px;font-weight:700;color:#fff}
+.sb-logo small{display:block;font-size:10px;color:#888;margin-top:1px}
+.sb-nav{padding:12px 0;flex:1}
+.sb-item{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;color:#aaa;font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s}
+.sb-item:hover{background:rgba(255,255,255,.05);color:#fff}
+.sb-item.active{background:rgba(186,117,23,.12);color:#e8a830;border-left-color:#BA7517}
+.sb-item i{font-size:18px;flex-shrink:0}
+.sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-user{font-size:12px;color:#888;display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.sb-user i{font-size:16px}
+.btn-lo{width:100%;padding:8px;background:rgba(255,255,255,.08);border:none;border-radius:7px;color:#aaa;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-lo:hover{background:rgba(255,255,255,.12);color:#fff}
+
+/* 메인 */
+.main-area{flex:1;padding:28px;min-width:0;overflow:auto}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-hdr h2{font-size:18px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:8px}
+.page-hdr h2 i{font-size:20px;color:#BA7517}
+
+/* 카드 */
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* 통계 */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.stat-num{font-size:28px;font-weight:700;color:#BA7517;line-height:1}
+.stat-label{font-size:12px;color:#888;margin-top:5px}
+
+/* 테이블 */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#999;letter-spacing:.04em;border-bottom:1px solid #eee;white-space:nowrap}
+tbody tr{border-bottom:.5px solid #f0f0f0;transition:background .1s}
+tbody tr:hover{background:#fafaf8}
+tbody td{padding:11px 12px;font-size:13px;color:#333;vertical-align:middle}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.badge-submitted{background:#fff8ee;color:#854F0B;border:.5px solid #f0c040}
+.badge-reviewed{background:#f0faf0;color:#2E7D32;border:.5px solid #90d090}
+.btn-xs{padding:5px 11px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.btn-primary{background:#BA7517;color:#FAEEDA}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:#f3f3f3;color:#555}
+.btn-ghost:hover{background:#e8e8e8}
+.btn-danger{background:#fdf0f0;color:#c0392b}
+.btn-danger:hover{background:#f8d7d7}
+.btn-success{background:#f0faf0;color:#2E7D32;border:.5px solid #90d090}
+
+/* 버튼 */
+.btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 폼 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:11px;font-weight:700;color:#888;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{padding:9px 12px;border:.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:13px;font-family:inherit;outline:none;color:#1a1a1a}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#BA7517}
+.fg textarea{resize:vertical;min-height:70px}
+
+/* 사진 그리드 */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:16px}
+.photo-item{border:.5px solid rgba(0,0,0,.12);border-radius:10px;overflow:hidden;background:#fff}
+.photo-item.is-main{border:2px solid #BA7517}
+.photo-img-wrap{position:relative;background:#ececec}
+.photo-img{width:100%;height:180px;object-fit:cover;display:block}
+.photo-badge{position:absolute;top:8px;left:8px;background:#BA7517;color:#FAEEDA;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px}
+.photo-num{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.58);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px}
+.photo-body{padding:10px}
+.photo-body textarea{width:100%;min-height:58px;border:.5px solid rgba(0,0,0,.13);border-radius:7px;padding:8px 10px;font-size:12px;font-family:inherit;resize:none;outline:none;color:#333;background:#fafaf8}
+.photo-body textarea:focus{border-color:#BA7517}
+.photo-actions{display:flex;gap:6px;margin-top:8px}
+.photo-actions button{flex:1;padding:6px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:inherit}
+.btn-main-set{background:#fef7ec;color:#854F0B}
+.btn-photo-save{background:#BA7517;color:#FAEEDA}
+
+/* 백 버튼 */
+.back-row{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.btn-back{display:flex;align-items:center;gap:6px;padding:7px 14px;background:#f3f3f3;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit}
+.btn-back:hover{background:#e8e8e8}
+
+/* 빈 상태 */
+.empty-state{text-align:center;padding:60px 20px;color:#bbb}
+.empty-state i{font-size:48px;display:block;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* 토스트 */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,20,20,.88);color:#fff;font-size:13px;font-weight:500;padding:10px 22px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:400px}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal h3 i{color:#BA7517}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* 로딩 */
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-dark{border-color:rgba(0,0,0,.15);border-top-color:#BA7517}
+
+/* 구분선 */
+.divider{height:.5px;background:#f0f0f0;margin:20px 0}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 로그인 ══ -->
+<div id="loginView">
+  <div class="lcard">
+    <div class="llogo">
+      <i class="ti ti-shield-check"></i>
+      <div class="llogo-text">
+        <h1>관리자 로그인</h1>
+        <p>공사 현장 사진 일지 시스템</p>
+      </div>
+    </div>
+    <div class="lf"><label>아이디</label><input type="text" id="lgUser" autocomplete="username" autocapitalize="none"></div>
+    <div class="lf"><label>비밀번호</label><input type="password" id="lgPass" autocomplete="current-password"></div>
+    <button class="lbtn" id="lgBtn" onclick="doLogin()">로그인</button>
+    <div class="lerr" id="lgErr"></div>
+  </div>
+</div>
+
+<!-- ══ 관리자 뷰 ══ -->
+<div id="adminView">
+  <!-- 사이드바 -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <i class="ti ti-building-factory-2"></i>
+      <div>
+        <span>공사 사진 일지</span>
+        <small>관리자</small>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-item active" id="nav-reports" onclick="navTo('reports')">
+        <i class="ti ti-file-description"></i>보고서 목록
+      </div>
+      <div class="sb-item" id="nav-users" onclick="navTo('users')">
+        <i class="ti ti-users"></i>작업자 관리
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user"><i class="ti ti-user-circle"></i><span id="sbName">-</span></div>
+      <button class="btn-lo" onclick="doLogout()"><i class="ti ti-logout"></i>로그아웃</button>
+    </div>
+  </div>
+
+  <!-- 메인 영역 -->
+  <div class="main-area" id="mainArea">
+    <!-- 보고서 목록 뷰 -->
+    <div id="viewReports" style="display:none">
+      <div class="page-hdr">
+        <h2><i class="ti ti-file-description"></i>보고서 목록</h2>
+        <button class="btn btn-primary" onclick="loadReports()"><i class="ti ti-refresh"></i>새로고침</button>
+      </div>
+      <div class="stat-row" id="statsRow">
+        <div class="stat-card"><div class="stat-num" id="st-total">-</div><div class="stat-label">전체 보고서</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-month">-</div><div class="stat-label">이번 달</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-pending">-</div><div class="stat-label">검토 대기</div></div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>현장명</th><th>작업일</th><th>작성자</th><th>사진</th><th>상태</th><th>제출일</th><th>작업</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTbody">
+              <tr><td colspan="8" class="empty-state"><i class="ti ti-loader" style="font-size:20px;animation:spin .7s linear infinite"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 보고서 상세 뷰 -->
+    <div id="viewDetail" style="display:none">
+      <div class="back-row">
+        <button class="btn-back" onclick="navTo('reports')"><i class="ti ti-arrow-left"></i>목록으로</button>
+        <span style="font-size:13px;color:#888" id="detailBreadcrumb">보고서 #-</span>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px">
+            <i class="ti ti-clipboard-text" style="color:#BA7517"></i>보고서 정보
+          </h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="detailStatus" class="badge badge-submitted">검토 대기</span>
+            <button class="btn btn-primary" id="btnSaveReport" onclick="saveReport()"><i class="ti ti-device-floppy"></i>저장</button>
+          </div>
+        </div>
+        <div class="form-grid" id="reportForm"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px">
+            <i class="ti ti-photos" style="color:#BA7517"></i>사진 <span id="photoCount" style="font-size:13px;color:#888;font-weight:400"></span>
+          </h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" id="btnRegenPDF" onclick="regenPDF()">
+              <i class="ti ti-refresh"></i>PDF 재생성
+            </button>
+            <a id="btnDlPDF" class="btn btn-success btn-xs" style="font-size:13px;padding:9px 14px" target="_blank">
+              <i class="ti ti-download"></i>PDF 다운로드
+            </a>
+          </div>
+        </div>
+        <div class="photo-grid" id="photoGrid"></div>
+      </div>
+    </div>
+
+    <!-- 작업자 관리 뷰 -->
+    <div id="viewUsers" style="display:none">
+      <div class="page-hdr">
+        <h2><i class="ti ti-users"></i>작업자 관리</h2>
+        <button class="btn btn-primary" onclick="openAddUser()"><i class="ti ti-user-plus"></i>계정 추가</button>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>아이디</th><th>이름</th><th>권한</th><th>등록일</th><th>작업</th></tr>
+            </thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 계정 추가 모달 ══ -->
+<div class="modal-bg" id="modalAddUser">
+  <div class="modal">
+    <h3><i class="ti ti-user-plus"></i>계정 추가</h3>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="fg"><label>아이디</label><input type="text" id="nuUser" autocapitalize="none"></div>
+      <div class="fg"><label>이름</label><input type="text" id="nuName"></div>
+      <div class="fg"><label>비밀번호</label><input type="password" id="nuPass"></div>
+      <div class="fg"><label>권한</label>
+        <select id="nuRole">
+          <option value="worker">작업자</option>
+          <option value="admin">관리자</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAddUser')">취소</button>
+      <button class="btn btn-primary" onclick="addUser()"><i class="ti ti-check"></i>추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 비밀번호 변경 모달 ══ -->
+<div class="modal-bg" id="modalPw">
+  <div class="modal">
+    <h3><i class="ti ti-key"></i>비밀번호 변경</h3>
+    <input type="hidden" id="pwUserId">
+    <div class="fg full"><label>새 비밀번호 (4자 이상)</label><input type="password" id="pwInput"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalPw')">취소</button>
+      <button class="btn btn-primary" onclick="changePassword()"><i class="ti ti-check"></i>변경</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF 재생성용 숨긴 영역 -->
+<div id="pdfRenderBox" style="position:absolute;left:-9999px;top:0;width:794px"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* ════════════════════════════════════
+   상태
+════════════════════════════════════ */
+let token=localStorage.getItem('cj_token')||null;
+let currentUser=null;
+let currentReport=null;
+let currentView='reports';
+
+const FF="'Apple SD Gothic Neo','Malgun Gothic','NanumGothic',sans-serif";
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+/* ════════════════════════════════════
+   유틸
+════════════════════════════════════ */
+function toast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._tt);t._tt=setTimeout(()=>t.className='toast',dur);
+}
+function api(url,opts={}){
+  return fetch(url,{...opts,headers:{Authorization:`Bearer ${token}`,...(opts.headers||{})}});
+}
+function closeModal(id){document.getElementById(id).className='modal-bg';}
+
+/* ════════════════════════════════════
+   인증
+════════════════════════════════════ */
+async function doLogin(){
+  const u=document.getElementById('lgUser').value.trim();
+  const p=document.getElementById('lgPass').value;
+  const err=document.getElementById('lgErr');
+  const btn=document.getElementById('lgBtn');
+  if(!u||!p){err.textContent='아이디와 비밀번호를 입력하세요';return;}
+  btn.disabled=true;btn.textContent='확인 중...';err.textContent='';
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(!r.ok){err.textContent=d.error||'로그인 실패';return;}
+    if(d.user.role!=='admin'){err.textContent='관리자 계정이 아닙니다';return;}
+    token=d.token;currentUser=d.user;
+    localStorage.setItem('cj_token',token);
+    showAdmin();
+  }catch{err.textContent='서버에 연결할 수 없습니다';}
+  finally{btn.disabled=false;btn.textContent='로그인';}
+}
+async function checkAuth(){
+  if(!token){showLogin();return;}
+  try{
+    const r=await api('/api/auth/me');
+    if(!r.ok){clearAuth();showLogin();return;}
+    const u=await r.json();
+    if(u.role!=='admin'){clearAuth();showLogin();return;}
+    currentUser=u;showAdmin();
+  }catch{showLogin();}
+}
+function clearAuth(){token=null;currentUser=null;localStorage.removeItem('cj_token');}
+function doLogout(){clearAuth();location.reload();}
+function showLogin(){
+  document.getElementById('loginView').className='show';
+  document.getElementById('adminView').className='';
+}
+function showAdmin(){
+  document.getElementById('loginView').className='';
+  document.getElementById('adminView').className='show';
+  document.getElementById('sbName').textContent=currentUser?.name||'-';
+  navTo('reports');
+}
+document.getElementById('lgPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+/* ════════════════════════════════════
+   내비게이션
+════════════════════════════════════ */
+function navTo(view){
+  currentView=view;
+  ['reports','users'].forEach(v=>{
+    document.getElementById('nav-'+v)?.classList.toggle('active',v===view);
+  });
+  ['viewReports','viewDetail','viewUsers'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  if(view==='reports'){document.getElementById('viewReports').style.display='';loadReports();}
+  else if(view==='detail'){document.getElementById('viewDetail').style.display='';}
+  else if(view==='users'){document.getElementById('viewUsers').style.display='';loadUsers();}
+}
+
+/* ════════════════════════════════════
+   보고서 목록
+════════════════════════════════════ */
+async function loadReports(){
+  const tbody=document.getElementById('reportsTbody');
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:#bbb"><i class="ti ti-loader" style="animation:spin .7s linear infinite;font-size:20px"></i></td></tr>';
+  try{
+    const r=await api('/api/reports');
+    const reports=await r.json();
+    updateStats(reports);
+    if(!reports.length){
+      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:50px;color:#bbb">제출된 보고서가 없습니다</td></tr>';
+      return;
+    }
+    const now=new Date();const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    tbody.innerHTML=reports.map(r=>`<tr>
+      <td style="color:#bbb;font-size:12px">#${r.id}</td>
+      <td style="font-weight:500">${r.site_name||r.project_name}</td>
+      <td style="color:#666">${r.work_date||'-'}</td>
+      <td>${r.worker_name||'-'}</td>
+      <td style="color:#888">${r.photo_count}장</td>
+      <td>${r.status==='reviewed'
+        ?'<span class="badge badge-reviewed"><i class="ti ti-check" style="font-size:11px"></i>검토 완료</span>'
+        :'<span class="badge badge-submitted">검토 대기</span>'
+      }</td>
+      <td style="color:#888;font-size:12px">${r.created_at?.slice(0,16)||'-'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn-xs btn-primary" onclick="openDetail(${r.id})"><i class="ti ti-eye" style="font-size:12px"></i>보기</button>
+          ${r.pdf_filename
+            ?`<a class="btn-xs btn-success" href="/pdfs/${r.pdf_filename}" target="_blank" style="text-decoration:none"><i class="ti ti-download" style="font-size:12px"></i>PDF</a>`
+            :'<span style="color:#ccc;font-size:12px">PDF 없음</span>'
+          }
+          <button class="btn-xs btn-danger" onclick="deleteReport(${r.id})"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  }catch(e){toast('보고서 로드 오류: '+e.message);}
+}
+
+function updateStats(reports){
+  const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('st-total').textContent=reports.length;
+  document.getElementById('st-month').textContent=reports.filter(r=>r.created_at?.startsWith(ym)).length;
+  document.getElementById('st-pending').textContent=reports.filter(r=>r.status==='submitted').length;
+}
+
+async function deleteReport(id){
+  if(!confirm(`보고서 #${id}를 삭제하시겠습니까?\n사진과 PDF 파일도 함께 삭제됩니다.`))return;
+  const r=await api(`/api/reports/${id}`,{method:'DELETE'});
+  if(r.ok){toast('삭제되었습니다');loadReports();}
+  else toast('삭제 오류');
+}
+
+/* ════════════════════════════════════
+   보고서 상세
+════════════════════════════════════ */
+async function openDetail(id){
+  document.getElementById('viewReports').style.display='none';
+  document.getElementById('viewDetail').style.display='';
+  document.getElementById('detailBreadcrumb').textContent=`보고서 #${id}`;
+  document.getElementById('photoGrid').innerHTML='<div style="text-align:center;padding:30px;color:#bbb;grid-column:1/-1"><i class="ti ti-loader" style="animation:spin .7s linear infinite;font-size:20px"></i></div>';
+  document.getElementById('reportForm').innerHTML='';
+  try{
+    const r=await api(`/api/reports/${id}`);
+    currentReport=await r.json();
+    renderDetailForm();
+    renderPhotos();
+    updatePDFLink();
+  }catch(e){toast('상세 로드 오류: '+e.message);}
+}
+
+function renderDetailForm(){
+  const rp=currentReport;
+  const statusBadge=document.getElementById('detailStatus');
+  statusBadge.className='badge '+(rp.status==='reviewed'?'badge-reviewed':'badge-submitted');
+  statusBadge.innerHTML=rp.status==='reviewed'
+    ?'<i class="ti ti-check" style="font-size:11px"></i>검토 완료'
+    :'검토 대기';
+
+  document.getElementById('reportForm').innerHTML=`
+    <div class="fg full">
+      <label>현장명</label>
+      <input type="text" id="rf-site" value="${rp.site_name||''}">
+    </div>
+    <div class="fg">
+      <label>작업일</label>
+      <input type="date" id="rf-date" value="${rp.work_date||''}">
+    </div>
+    <div class="fg">
+      <label>날씨</label>
+      <select id="rf-weather">
+        <option value="">선택</option>
+        ${['맑음 ☀️','구름조금 🌤️','흐림 ☁️','비 🌧️','눈 ❄️'].map(w=>`<option${rp.weather===w?' selected':''}>${w}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg">
+      <label>기온</label>
+      <input type="text" id="rf-temp" value="${rp.temperature||''}" placeholder="예) 23°C">
+    </div>
+    <div class="fg">
+      <label>공종</label>
+      <input type="text" id="rf-worktype" value="${rp.work_type||''}">
+    </div>
+    <div class="fg">
+      <label>상태</label>
+      <select id="rf-status">
+        <option value="submitted"${rp.status==='submitted'?' selected':''}>검토 대기</option>
+        <option value="reviewed"${rp.status==='reviewed'?' selected':''}>검토 완료</option>
+      </select>
+    </div>
+    <div class="fg full">
+      <label>특이사항</label>
+      <textarea id="rf-notes">${rp.notes||''}</textarea>
+    </div>
+    <div class="fg full" style="font-size:12px;color:#999;display:flex;gap:18px">
+      <span>제출자: <strong>${rp.worker_name||'-'}</strong></span>
+      <span>제출일: <strong>${rp.created_at?.slice(0,16)||'-'}</strong></span>
+      <span>수정일: <strong>${rp.updated_at?.slice(0,16)||'-'}</strong></span>
+    </div>
+  `;
+}
+
+async function saveReport(){
+  const btn=document.getElementById('btnSaveReport');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div>저장 중...';
+  try{
+    const body={
+      project_name:document.getElementById('rf-site').value||currentReport.project_name,
+      site_name:document.getElementById('rf-site').value,
+      work_date:document.getElementById('rf-date').value,
+      weather:document.getElementById('rf-weather').value,
+      temperature:document.getElementById('rf-temp').value,
+      work_type:document.getElementById('rf-worktype').value,
+      notes:document.getElementById('rf-notes').value,
+      status:document.getElementById('rf-status').value
+    };
+    const r=await api(`/api/reports/${currentReport.id}`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+    });
+    if(!r.ok)throw new Error((await r.json()).error);
+    Object.assign(currentReport,body);
+    renderDetailForm();
+    toast('저장되었습니다 ✓');
+  }catch(e){toast('저장 오류: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i>저장';}
+}
+
+function renderPhotos(){
+  const photos=currentReport.photos||[];
+  document.getElementById('photoCount').textContent=`${photos.length}장`;
+  if(!photos.length){
+    document.getElementById('photoGrid').innerHTML='<div style="color:#bbb;text-align:center;padding:30px;grid-column:1/-1">사진 없음</div>';
+    return;
+  }
+  let seq=0;
+  document.getElementById('photoGrid').innerHTML=photos.map(p=>{
+    seq++;
+    return`<div class="photo-item${p.is_main?' is-main':''}" id="pi-${p.id}">
+      <div class="photo-img-wrap">
+        <img class="photo-img" src="/uploads/${p.filename}" loading="lazy" alt="사진 ${seq}">
+        ${p.is_main?'<span class="photo-badge">대표</span>':''}
+        <span class="photo-num">#${seq}</span>
+      </div>
+      <div class="photo-body">
+        <textarea id="pd-${p.id}" placeholder="설명 없음">${p.description||''}</textarea>
+        <div class="photo-actions">
+          <button class="btn-main-set" onclick="setMainPhoto(${p.id})"${p.is_main?' disabled':''}>
+            <i class="ti ti-star${p.is_main?'-filled':''}"></i>${p.is_main?'대표':'대표 설정'}
+          </button>
+          <button class="btn-photo-save" onclick="savePhotoDesc(${p.id})">확인</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function savePhotoDesc(pid){
+  const desc=document.getElementById('pd-'+pid)?.value||'';
+  const isMain=currentReport.photos?.find(p=>p.id===pid)?.is_main||0;
+  const r=await api(`/api/photos/${pid}`,{
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({description:desc,is_main:isMain})
+  });
+  if(r.ok)toast('설명 저장됨 ✓');
+  else toast('저장 오류');
+}
+
+async function setMainPhoto(pid){
+  const r=await api(`/api/photos/${pid}`,{
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({description:document.getElementById('pd-'+pid)?.value||'',is_main:1})
+  });
+  if(r.ok){
+    currentReport.photos=currentReport.photos.map(p=>({...p,is_main:p.id===pid?1:0}));
+    renderPhotos();toast('대표 사진 변경됨');
+  }else toast('오류');
+}
+
+function updatePDFLink(){
+  const a=document.getElementById('btnDlPDF');
+  if(currentReport.pdf_filename){
+    a.href=`/pdfs/${currentReport.pdf_filename}`;
+    a.style.opacity='1';a.style.pointerEvents='';
+  }else{
+    a.href='#';a.style.opacity='.4';a.style.pointerEvents='none';
+  }
+}
+
+/* ════════════════════════════════════
+   PDF 재생성 (관리자 브라우저에서)
+════════════════════════════════════ */
+const fmtShort=ts=>new Date(ts).toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'});
+const fmtTime2=ts=>new Date(ts).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+function pdfEsc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+function buildCoverHTML(rp,mainSrc,st){
+  const infoRows=[
+    ['현장명',rp.site_name||'-'],
+    ['작업일',rp.work_date||'-'],
+    ['날씨',(rp.weather||'')+(rp.temperature?' / '+rp.temperature:'')],
+    ['공종',rp.work_type||'-'],
+    ['촬영 기간',st.period],
+    ['총 사진 수',`표지 1장 + 현장 ${st.inner}장`],
+    ['제출자',rp.worker_name||'-'],
+    ...(rp.notes?[['특이사항',rp.notes]]:[])
+  ];
+  return`<div style="width:794px;height:1123px;background:#fff;font-family:${FF};display:flex;flex-direction:column;overflow:hidden">
+  <div style="background:#BA7517;padding:32px 48px;flex-shrink:0">
+    <div style="color:#FAEEDA;font-size:26px;font-weight:700">${pdfEsc(rp.site_name||rp.project_name)}</div>
+    <div style="color:rgba(250,238,218,.72);font-size:15px;margin-top:7px">공사 현장 사진 보고서</div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:28px 48px;background:#f8f8f8">
+    <img src="${mainSrc}" style="max-width:680px;max-height:460px;object-fit:contain;border:1px solid #e0e0e0" crossorigin="anonymous">
+  </div>
+  <div style="padding:22px 48px;border-top:1px solid #eee">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:#333">
+      ${infoRows.map((r,i)=>`<tr${i<infoRows.length-1?' style="border-bottom:1px solid #f0f0f0"':''}>
+        <td style="padding:8px 0;color:#888;width:110px;vertical-align:top">${r[0]}</td>
+        <td style="padding:8px 0">${pdfEsc(r[1])}</td>
+      </tr>`).join('')}
+    </table>
+  </div>
+  <div style="padding:12px 48px;background:#f5f5f5;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between">
+    <span style="font-size:12px;color:#aaa">공사 현장 사진 일지</span>
+    <span style="font-size:12px;color:#aaa">1 / ${st.pages}</span>
+  </div></div>`;
+}
+
+function buildPageHTML(projName,p1,s1,p2,s2,pn,tp,i1,i2){
+  const block=(p,src,seq)=>{
+    if(!p)return`<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:16px 48px"><div style="width:100%;height:100%;border:1.5px dashed #e0e0e0;border-radius:6px;display:flex;align-items:center;justify-content:center"><span style="font-size:13px;color:#ccc">해당 없음</span></div></div>`;
+    return`<div style="flex:1;display:flex;flex-direction:column;padding:10px 48px;min-height:0;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0">
+        <span style="background:#BA7517;color:#FAEEDA;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px">#${seq}</span>
+        <span style="font-size:12px;color:#888">${fmtTime2(p.exif_timestamp||0)}</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#f8f8f8;border:1px solid #e8e8e8;overflow:hidden;max-height:295px">
+        <img src="${src}" style="max-width:100%;max-height:295px;object-fit:contain;display:block" crossorigin="anonymous">
+      </div>
+      <div style="margin-top:8px;padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:4px;min-height:52px;font-size:13px;color:${p.description?'#333':'#bbb'};line-height:1.65">${p.description?pdfEsc(p.description):'(설명 없음)'}</div>
+    </div>`;
+  };
+  return`<div style="width:794px;height:1123px;background:#fff;font-family:${FF};display:flex;flex-direction:column;overflow:hidden">
+  <div style="padding:14px 48px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <span style="font-size:14px;font-weight:700;color:#222">${pdfEsc(projName)}</span>
+    <span style="font-size:12px;color:#bbb">현장 사진 보고서</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+    ${block(p1,s1,i1)}
+    <div style="height:1px;background:#eee;margin:0 48px;flex-shrink:0"></div>
+    ${block(p2,s2,i2)}
+  </div>
+  <div style="padding:14px 48px;background:#f5f5f5;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between;flex-shrink:0">
+    <span style="font-size:12px;color:#aaa">공사 현장 사진 일지</span>
+    <span style="font-size:12px;color:#aaa">${pn} / ${tp}</span>
+  </div></div>`;
+}
+
+async function regenPDF(){
+  const btn=document.getElementById('btnRegenPDF');
+  const rp=currentReport;
+  if(!rp?.photos?.length){toast('사진이 없어 PDF를 생성할 수 없습니다');return;}
+  btn.disabled=true;btn.innerHTML='<div class="spin spin-dark"></div>생성 중...';
+  try{
+    const photos=[...rp.photos].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)||(a.exif_timestamp||0)-(b.exif_timestamp||0));
+    const mainPhoto=photos.find(p=>p.is_main)||photos[0];
+    const others=photos.filter(p=>p.id!==mainPhoto.id);
+    const total=1+Math.ceil(others.length/2);
+    const ts=photos.map(p=>p.exif_timestamp||0).filter(Boolean).sort((a,b)=>a-b);
+    const st={period:ts.length>1?`${fmtShort(ts[0])} ~ ${fmtShort(ts[ts.length-1])}`:ts.length?fmtShort(ts[0]):'-',
+      total:photos.length,inner:others.length,pages:total};
+
+    const box=document.getElementById('pdfRenderBox');
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({format:'a4',unit:'mm'});
+
+    const imgSrc=p=>`/uploads/${p.filename}`;
+    const cap=async html=>{
+      box.innerHTML=html;
+      await new Promise(res=>{
+        const imgs=box.querySelectorAll('img');
+        if(!imgs.length){res();return;}
+        Promise.all(Array.from(imgs).map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=img.onerror=r;}))).then(res);
+      });
+      await new Promise(r=>setTimeout(r,80));
+      const cv=await html2canvas(box.firstElementChild,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,width:794,height:1123});
+      return cv.toDataURL('image/jpeg',.92);
+    };
+
+    doc.addImage(await cap(buildCoverHTML(rp,imgSrc(mainPhoto),st)),'JPEG',0,0,210,297);
+    for(let i=0;i<others.length;i+=2){
+      doc.addPage();
+      const p1=others[i],p2=others[i+1]||null,pn=2+Math.floor(i/2);
+      doc.addImage(await cap(buildPageHTML(rp.site_name||rp.project_name,p1,imgSrc(p1),p2,p2?imgSrc(p2):null,pn,total,i+1,p2?i+2:null)),'JPEG',0,0,210,297);
+    }
+    box.innerHTML='';
+    const pdfBlob=doc.output('blob');
+    const fname=`${rp.site_name||rp.project_name}_${rp.work_date||'보고서'}.pdf`;
+    const fd=new FormData();fd.append('pdf',pdfBlob,fname);
+    const r=await api(`/api/reports/${rp.id}/pdf`,{method:'PUT',body:fd});
+    if(!r.ok)throw new Error((await r.json()).error);
+    const d=await r.json();
+    currentReport.pdf_filename=d.filename;
+    updatePDFLink();
+    toast('PDF 재생성 완료 ✓');
+  }catch(e){toast('PDF 오류: '+e.message);}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i>PDF 재생성';}
+}
+
+/* ════════════════════════════════════
+   사용자 관리
+════════════════════════════════════ */
+async function loadUsers(){
+  const tbody=document.getElementById('usersTbody');
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:#bbb">로드 중...</td></tr>';
+  try{
+    const r=await api('/api/users');
+    const users=await r.json();
+    if(!users.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:#bbb">등록된 계정 없음</td></tr>';return;}
+    tbody.innerHTML=users.map(u=>`<tr>
+      <td style="color:#bbb;font-size:12px">${u.id}</td>
+      <td style="font-weight:500">${u.username}</td>
+      <td>${u.name}</td>
+      <td><span class="badge ${u.role==='admin'?'badge-reviewed':'badge-submitted'}">${u.role==='admin'?'관리자':'작업자'}</span></td>
+      <td style="color:#888;font-size:12px">${u.created_at?.slice(0,10)||'-'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn-xs btn-ghost" onclick="openPwChange(${u.id})"><i class="ti ti-key" style="font-size:12px"></i>비밀번호</button>
+          ${u.id!==currentUser?.id?`<button class="btn-xs btn-danger" onclick="deleteUser(${u.id},'${u.name}')"><i class="ti ti-trash" style="font-size:12px"></i></button>`:''}
+        </div>
+      </td>
+    </tr>`).join('');
+  }catch(e){toast('로드 오류: '+e.message);}
+}
+
+function openAddUser(){document.getElementById('modalAddUser').className='modal-bg show';}
+async function addUser(){
+  const u=document.getElementById('nuUser').value.trim();
+  const n=document.getElementById('nuName').value.trim();
+  const p=document.getElementById('nuPass').value;
+  const ro=document.getElementById('nuRole').value;
+  if(!u||!n||!p){toast('모든 항목을 입력하세요');return;}
+  const r=await api('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,name:n,password:p,role:ro})});
+  const d=await r.json();
+  if(!r.ok){toast(d.error||'추가 오류');return;}
+  closeModal('modalAddUser');
+  document.getElementById('nuUser').value='';document.getElementById('nuName').value='';document.getElementById('nuPass').value='';
+  toast(`${n} 계정이 추가되었습니다`);loadUsers();
+}
+
+function openPwChange(uid){
+  document.getElementById('pwUserId').value=uid;
+  document.getElementById('pwInput').value='';
+  document.getElementById('modalPw').className='modal-bg show';
+}
+async function changePassword(){
+  const uid=document.getElementById('pwUserId').value;
+  const pw=document.getElementById('pwInput').value;
+  if(!pw||pw.length<4){toast('비밀번호는 4자 이상이어야 합니다');return;}
+  const r=await api(`/api/users/${uid}/password`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+  if(r.ok){closeModal('modalPw');toast('비밀번호가 변경되었습니다');}
+  else toast('변경 오류');
+}
+
+async function deleteUser(id,name){
+  if(!confirm(`${name} 계정을 삭제하시겠습니까?`))return;
+  const r=await api(`/api/users/${id}`,{method:'DELETE'});
+  if(r.ok){toast('삭제되었습니다');loadUsers();}
+  else toast('삭제 오류');
+}
+
+// 모달 바깥 클릭 닫기
+document.querySelectorAll('.modal-bg').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.className='modal-bg';});
+});
+
+/* ════════════════════════════════════
+   초기화
+════════════════════════════════════ */
+checkAuth();
+</script>
+</body>
+</html>
