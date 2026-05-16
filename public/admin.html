@@ -341,7 +341,8 @@ function toast(msg,dur=2800){
   t.textContent=msg;t.className='toast show';
   clearTimeout(t._tt);t._tt=setTimeout(()=>t.className='toast',dur);
 }
-function api(url,opts={}){
+const BASE='https://construction-journal-production.up.railway.app';
+function api(url,opts={}){url=url.startsWith('http')?url:BASE+url;
   return fetch(url,{...opts,headers:{Authorization:`Bearer ${token}`,...(opts.headers||{})}});
 }
 function closeModal(id){document.getElementById(id).className='modal-bg';}
@@ -705,7 +706,7 @@ async function regenPDF(){
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({format:'a4',unit:'mm'});
 
-    const imgSrc=p=>`https://construction-journal-production.up.railway.app/uploads/${p.filename}`;
+    const imgSrc=p=>`/uploads/${p.filename}`;
     const cap=async html=>{
       box.innerHTML=html;
       await new Promise(res=>{
