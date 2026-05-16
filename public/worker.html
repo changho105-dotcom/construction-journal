@@ -414,7 +414,7 @@ async function doLogin(){
   if(!u||!p){errEl.textContent='아이디와 비밀번호를 입력하세요';return;}
   btn.disabled=true;btn.textContent='확인 중...';errEl.textContent='';
   try{
-    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const r=await fetch('https://construction-journal-production.up.railway.app/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
     if(!r.ok){errEl.textContent=d.error||'로그인 실패';return;}
     token=d.token;currentUser=d.user;
@@ -427,7 +427,7 @@ async function doLogin(){
 async function checkAuth(){
   if(!token){showLogin();return;}
   try{
-    const r=await fetch('/api/auth/me',{headers:{Authorization:`Bearer ${token}`}});
+    const r=await fetch('https://construction-journal-production.up.railway.app/api/auth/me',{headers:{Authorization:`Bearer ${token}`}});
     if(!r.ok){clearAuth();showLogin();return;}
     currentUser=await r.json();
     // 관리자 계정으로 접속 시 로그인 화면 표시
@@ -619,7 +619,7 @@ async function uploadToServer(){
   formData.append('pdf',pdfBlob,pdfFname);
 
   document.getElementById('submitStep').textContent='서버에 저장 중...';
-  const r=await fetch('/api/reports',{
+  const r=await fetch('https://construction-journal-production.up.railway.app/api/reports',{
     method:'POST',
     headers:{Authorization:`Bearer ${token}`},
     body:formData
@@ -950,7 +950,7 @@ async function loadMyReports(){
   const el=document.getElementById('myReportsList');
   el.innerHTML='<div class="rlist-empty"><i class="ti ti-loader" style="animation:sp .7s linear infinite"></i></div>';
   try{
-    const r=await fetch('/api/reports',{headers:{Authorization:`Bearer ${token}`}});
+    const r=await fetch('https://construction-journal-production.up.railway.app/api/reports',{headers:{Authorization:`Bearer ${token}`}});
     const reports=await r.json();
     if(!reports.length){
       el.innerHTML='<div class="rlist-empty"><i class="ti ti-clipboard-off"></i><p>제출한 보고서가 없습니다</p></div>';
@@ -978,7 +978,7 @@ async function loadMyReports(){
       const mainPhoto=(d.photos||[]).find(p=>p.is_main)||(d.photos||[])[0];
       if(mainPhoto){
         const el2=document.getElementById(`rthumb-${rp.id}`);
-        if(el2)el2.src=`/uploads/${mainPhoto.filename}`;
+        if(el2)el2.src=`https://construction-journal-production.up.railway.app/uploads/${mainPhoto.filename}`;
       }
     }
   }catch(e){el.innerHTML='<div class="rlist-empty"><p>로드 오류</p></div>';}
